@@ -32,9 +32,9 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 40px 24px 28px;
-      gap: 24px;
+      align-items: stretch;
+      padding: 16px 20px 20px;
+      gap: 10px;
       position: relative;
       overflow-x: hidden;
     }
@@ -97,15 +97,14 @@
     /* ── Header ──────────────────────────────────────────────────────────── */
     .header {
       width: 100%;
-      max-width: 960px;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
     }
 
     .greeting {
       font-family: 'Lora', serif;
-      font-size: 1.45rem;
+      font-size: 1.1rem;
       color: var(--text-muted);
       font-style: italic;
     }
@@ -114,22 +113,21 @@
 
     .clock {
       font-family: 'Lora', serif;
-      font-size: 3rem;
+      font-size: 2.1rem;
       font-weight: 600;
       line-height: 1;
       letter-spacing: -0.02em;
     }
 
     .date-display {
-      font-size: 0.88rem;
+      font-size: 0.80rem;
       color: var(--text-muted);
-      margin-top: 5px;
+      margin-top: 3px;
     }
 
     /* ── Search ──────────────────────────────────────────────────────────── */
     .search-section {
       width: 100%;
-      max-width: 640px;
     }
 
     .search-bar {
@@ -165,7 +163,7 @@
       font-family: 'Nunito', sans-serif;
       font-size: 1rem;
       color: var(--text);
-      padding: 14px 0;
+      padding: 10px 0;
       min-width: 0;
     }
 
@@ -198,17 +196,16 @@
     /* ── Grid ────────────────────────────────────────────────────────────── */
     .grid {
       width: 100%;
-      max-width: 960px;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
     }
 
     .tile {
       background: var(--tile-bg);
       border: 1.5px solid var(--tile-border);
-      border-radius: 20px;
-      padding: 22px 24px;
+      border-radius: 16px;
+      padding: 14px 18px;
       box-shadow: 0 4px 28px rgba(0,0,0,0.45);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
@@ -226,8 +223,8 @@
     /* ── Bookmarks ───────────────────────────────────────────────────────── */
     .bookmarks-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+      gap: 6px;
     }
 
     .bookmark {
@@ -352,7 +349,7 @@
       grid-column: 1 / -1;
       padding: 0;
       overflow: hidden;
-      height: 210px;
+      height: 140px;
       position: relative;
     }
 
@@ -479,6 +476,423 @@
 
     .bm-add-confirm:hover { opacity: 0.85; }
 
+    /* ── Maned wolf tile ────────────────────────────────────────────────── */
+    .tile.wolf {
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      background: #0d0905;
+    }
+
+    .wolf-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.5s ease;
+    }
+
+    .wolf-img.loading { opacity: 0; }
+
+    /* Gradient overlay so caption is readable */
+    .wolf-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        transparent 45%,
+        rgba(10, 5, 2, 0.75) 100%
+      );
+      pointer-events: none;
+    }
+
+    .wolf-caption {
+      position: absolute;
+      bottom: 13px;
+      left: 18px;
+      right: 80px;
+      font-size: 0.72rem;
+      color: rgba(255, 230, 200, 0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wolf-caption a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .wolf-caption a:hover { color: rgba(255, 210, 150, 0.9); text-decoration: underline; }
+
+    .wolf-next {
+      position: absolute;
+      bottom: 10px;
+      right: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255, 210, 150, 0.4);
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      backdrop-filter: blur(4px);
+      transition: background 0.15s, color 0.15s, opacity 0.15s;
+      opacity: 0;
+    }
+
+    .tile.wolf:hover .wolf-next { opacity: 1; }
+    .wolf-next:hover { background: rgba(255,255,255,0.16); color: rgba(255,210,150,0.9); }
+
+    .wolf-spinner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      color: var(--text-faint);
+      font-style: italic;
+    }
+
+    /* ── Space tile ──────────────────────────────────────────────────────── */
+    .tile.space-tile {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .space-section-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-faint);
+      margin-bottom: 10px;
+    }
+
+    /* Launch block */
+    .launch-block { margin-bottom: 16px; }
+
+    .launch-name {
+      font-size: 0.90rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .launch-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 6px;
+    }
+
+    .launch-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .launch-countdown {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .launch-status {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 50px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text-muted);
+    }
+
+    .launch-status.go     { background: rgba(80,180,100,0.18); color: #7ec89a; }
+    .launch-status.tbd    { background: rgba(180,160,80,0.18); color: #c8b87e; }
+    .launch-status.hold   { background: rgba(200,80,60,0.18);  color: #c8907e; }
+
+    /* Divider */
+    .space-divider {
+      height: 1px;
+      background: var(--tile-border);
+      margin: 14px 0;
+      flex-shrink: 0;
+    }
+
+    /* News headlines */
+    .space-news { display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+
+    .news-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .news-link {
+      font-size: 0.80rem;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      transition: color 0.15s;
+    }
+
+    .news-link:hover { color: var(--accent); }
+
+    .news-meta {
+      font-size: 0.68rem;
+      color: var(--text-faint);
+    }
+
+    /* ── On This Day tile ───────────────────────────────────────────────── */
+    .otd-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .otd-item { display: flex; gap: 10px; align-items: flex-start; }
+
+    .otd-year {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 36px;
+      padding-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .otd-text {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── OSRS GE tile ────────────────────────────────────────────────────── */
+    .ge-list { display: flex; flex-direction: column; gap: 7px; }
+
+    .ge-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,210,155,0.07);
+    }
+
+    .ge-row:last-child { border-bottom: none; }
+
+    .ge-name {
+      font-size: 0.82rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .ge-prices {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ge-price-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 1px;
+    }
+
+    .ge-price-label {
+      font-size: 0.58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .ge-price-label.buy  { color: #7ec89a; }
+    .ge-price-label.sell { color: #c87e7e; }
+    .ge-price-label.margin { color: var(--accent); }
+
+    .ge-price-val {
+      font-size: 0.80rem;
+      font-weight: 700;
+    }
+
+    .ge-price-val.buy    { color: #7ec89a; }
+    .ge-price-val.sell   { color: #c87e7e; }
+    .ge-price-val.margin { color: var(--accent); }
+
+    .ge-del {
+      display: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #c06055;
+      border: none;
+      color: white;
+      font-size: 0.60rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .editing-ge .ge-del   { display: flex; }
+    .editing-ge .ge-row   { opacity: 0.8; }
+
+    .ge-search-wrap { position: relative; margin-top: 12px; display: none; }
+    .ge-search-wrap.visible { display: block; }
+
+    .ge-results {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: #1e1208;
+      border: 1.5px solid var(--tile-border);
+      border-radius: 10px;
+      overflow: hidden;
+      z-index: 10;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .ge-result-item {
+      padding: 7px 12px;
+      font-size: 0.80rem;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.1s;
+    }
+
+    .ge-result-item:hover { background: rgba(255,255,255,0.08); }
+
+    /* ── NASA APOD tile ──────────────────────────────────────────────────── */
+    .tile.apod {
+      grid-column: 1 / -1;
+      padding: 0;
+      overflow: hidden;
+      height: 260px;
+      position: relative;
+      background: #050308;
+    }
+
+    .apod-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.6s ease;
+    }
+
+    .apod-img.loading { opacity: 0; }
+
+    .apod-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        transparent 30%,
+        rgba(5, 3, 8, 0.82) 100%
+      );
+      pointer-events: none;
+    }
+
+    .apod-text {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 24px 18px;
+    }
+
+    .apod-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: rgba(200, 180, 255, 0.45);
+      margin-bottom: 5px;
+    }
+
+    .apod-title {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .apod-desc {
+      font-size: 0.75rem;
+      color: rgba(240, 228, 210, 0.6);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      max-width: 720px;
+    }
+
+    .apod-link {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(200, 180, 255, 0.55);
+      border-radius: 50px;
+      padding: 3px 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      text-decoration: none;
+      backdrop-filter: blur(4px);
+      transition: background 0.15s, color 0.15s, opacity 0.15s;
+      opacity: 0;
+    }
+
+    .tile.apod:hover .apod-link { opacity: 1; }
+    .apod-link:hover { background: rgba(255,255,255,0.16); color: rgba(200,180,255,0.9); }
+
+    .apod-video-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    .apod-video-placeholder a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
     /* ── States ──────────────────────────────────────────────────────────── */
     .state-loading { color: var(--text-faint); font-size: 0.83rem; font-style: italic; }
     .state-error   { color: #c06055; font-size: 0.82rem; }
@@ -495,13 +909,14 @@
     footer a:hover { text-decoration: underline; }
 
     /* ── Responsive ──────────────────────────────────────────────────────── */
-    @media (max-width: 620px) {
-      body { padding: 24px 16px 20px; }
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 580px) {
+      body { padding: 12px 12px 16px; }
       .grid { grid-template-columns: 1fr; }
-      .tile.art { grid-column: 1; }
-      .header { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 4px; }
       .clock-block { text-align: left; }
-      .clock { font-size: 2.4rem; }
     }
   </style>
 </head>
@@ -567,6 +982,8 @@
   <!-- ── Grid ───────────────────────────────────────────────────────────── -->
   <main class="grid">
 
+    <!-- ── ROW 1: Bookmarks | Weather | On This Day ── -->
+
     <!-- Bookmarks -->
     <div class="tile" id="bookmarks-tile">
       <div class="bookmarks-header">
@@ -603,10 +1020,67 @@
       <div class="wx-geocode-status" id="wx-geocode-status"></div>
     </div>
 
-    <!-- Generative Art -->
+    <!-- On This Day -->
+    <div class="tile">
+      <div class="tile-title" id="otd-title">On this day</div>
+      <div class="otd-list" id="otd-list"><span class="state-loading">Loading…</span></div>
+    </div>
+
+    <!-- ── ROW 2: Generative Art (full width) ── -->
     <div class="tile art">
       <button class="art-regen" id="art-regen">↺</button>
       <canvas id="art-canvas"></canvas>
+    </div>
+
+    <!-- ── ROW 3: Wolf | Space | OSRS GE ── -->
+
+    <!-- Maned Wolf -->
+    <div class="tile wolf" id="wolf-tile">
+      <div class="wolf-spinner" id="wolf-spinner">Loading wolf…</div>
+      <img class="wolf-img loading" id="wolf-img" alt="Maned wolf">
+      <div class="wolf-overlay"></div>
+      <div class="wolf-caption" id="wolf-caption"></div>
+      <button class="wolf-next" id="wolf-next">↺</button>
+    </div>
+
+    <!-- Space -->
+    <div class="tile space-tile">
+      <div class="tile-title" style="margin-bottom:10px">Space</div>
+      <div class="launch-block">
+        <div class="space-section-title">🚀 Next launch</div>
+        <div id="launch-content"><span class="state-loading">Fetching launch…</span></div>
+      </div>
+      <div class="space-divider"></div>
+      <div>
+        <div class="space-section-title">📡 Latest news</div>
+        <div class="space-news" id="space-news"><span class="state-loading">Fetching news…</span></div>
+      </div>
+    </div>
+
+    <!-- OSRS GE -->
+    <div class="tile" id="ge-tile">
+      <div class="bookmarks-header">
+        <div class="tile-title" style="margin-bottom:0">OSRS Grand Exchange</div>
+        <button class="bm-edit-btn" id="ge-edit-btn">Edit</button>
+      </div>
+      <div class="ge-list" id="ge-list" style="margin-top:10px"><span class="state-loading">Fetching prices…</span></div>
+      <div class="ge-search-wrap" id="ge-search-wrap">
+        <input class="bm-input" id="ge-search" placeholder="Search item…" autocomplete="off">
+        <div class="ge-results" id="ge-results" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- ── ROW 4: NASA APOD (full width) ── -->
+    <div class="tile apod" id="apod-tile">
+      <span class="apod-spinner state-loading" id="apod-spinner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">Loading today's image…</span>
+      <img class="apod-img loading" id="apod-img" alt="NASA Astronomy Picture of the Day">
+      <div class="apod-overlay"></div>
+      <div class="apod-text">
+        <div class="apod-label">✦ NASA · Astronomy picture of the day</div>
+        <div class="apod-title" id="apod-title"></div>
+        <div class="apod-desc"  id="apod-desc"></div>
+      </div>
+      <a class="apod-link" id="apod-link" target="_blank" rel="noopener">Full image ↗</a>
     </div>
 
   </main>
@@ -986,6 +1460,427 @@
 
     fetchWeather();
     setInterval(fetchWeather, 10 * 60 * 1000);
+
+    // ═══════════════════════════════════════════════════════════════
+    //  SPACE  (Launch Library 2 + Spaceflight News API — no key)
+    // ═══════════════════════════════════════════════════════════════
+
+    let nextLaunch = null;
+    let launchTimer = null;
+
+    function launchStatusClass(name = '') {
+      const n = name.toLowerCase();
+      if (n.includes('go'))   return 'go';
+      if (n.includes('hold')) return 'hold';
+      if (n.includes('tbd') || n.includes('determined') || n.includes('confirmed')) return 'tbd';
+      return '';
+    }
+
+    function formatCountdown(netStr) {
+      const diff = new Date(netStr) - Date.now();
+      if (diff <= 0) return 'Launching now';
+      const s = Math.floor(diff / 1000);
+      const m = Math.floor(s / 60);
+      const h = Math.floor(m / 60);
+      const d = Math.floor(h / 24);
+      if (d >= 2)  return `in ${d}d ${h % 24}h`;
+      if (h >= 1)  return `in ${h}h ${m % 60}m`;
+      return `in ${m}m ${s % 60}s`;
+    }
+
+    function tickLaunchCountdown() {
+      if (!nextLaunch) return;
+      const el = document.getElementById('launch-countdown');
+      if (el) el.textContent = formatCountdown(nextLaunch.net);
+    }
+
+    async function fetchLaunch() {
+      const el = document.getElementById('launch-content');
+      try {
+        const res  = await fetch('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=1&format=json');
+        const data = await res.json();
+        nextLaunch = data.results?.[0];
+        if (!nextLaunch) { el.innerHTML = '<span class="state-loading">No launches found.</span>'; return; }
+
+        const statusName = nextLaunch.status?.name ?? '';
+        const statusCls  = launchStatusClass(statusName);
+        const rocket     = nextLaunch.rocket?.configuration?.name ?? '';
+        const provider   = nextLaunch.launch_service_provider?.name ?? '';
+        const pad        = nextLaunch.pad?.name ?? '';
+        const missionName = nextLaunch.name ?? 'Unknown mission';
+        const launchDate = new Date(nextLaunch.net);
+        const dateStr    = launchDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        el.innerHTML = `
+          <div class="launch-name">${missionName}</div>
+          <div class="launch-meta">${[rocket, provider, pad].filter(Boolean).join(' · ')}</div>
+          <div class="launch-footer">
+            <span class="launch-countdown" id="launch-countdown">${formatCountdown(nextLaunch.net)}</span>
+            ${statusName ? `<span class="launch-status ${statusCls}">${statusName}</span>` : ''}
+          </div>
+          <div class="news-meta" style="margin-top:4px">${dateStr}</div>`;
+
+        if (launchTimer) clearInterval(launchTimer);
+        launchTimer = setInterval(tickLaunchCountdown, 1000);
+
+      } catch {
+        el.innerHTML = '<span class="state-error">⚠ Couldn\'t load launch data.</span>';
+      }
+    }
+
+    async function fetchSpaceNews() {
+      const el = document.getElementById('space-news');
+      try {
+        const res  = await fetch('https://api.spaceflightnewsapi.net/v4/articles/?limit=4&ordering=-published_at');
+        const data = await res.json();
+        const articles = data.results ?? [];
+        if (!articles.length) { el.innerHTML = '<span class="state-loading">No news found.</span>'; return; }
+
+        el.innerHTML = articles.map(a => {
+          const ago = timeAgo(new Date(a.published_at));
+          return `
+            <div class="news-item">
+              <a class="news-link" href="${a.url}" target="_blank" rel="noopener">${a.title}</a>
+              <span class="news-meta">${a.news_site} · ${ago}</span>
+            </div>`;
+        }).join('');
+      } catch {
+        el.innerHTML = '<span class="state-error">⚠ Couldn\'t load space news.</span>';
+      }
+    }
+
+    function timeAgo(date) {
+      const m = Math.floor((Date.now() - date) / 60000);
+      if (m < 60)   return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24)   return `${h}h ago`;
+      return `${Math.floor(h / 24)}d ago`;
+    }
+
+    fetchLaunch();
+    fetchSpaceNews();
+    // Refresh every 30 minutes
+    setInterval(() => { fetchLaunch(); fetchSpaceNews(); }, 30 * 60 * 1000);
+
+    // ═══════════════════════════════════════════════════════════════
+    //  ON THIS DAY  (Wikipedia REST API)
+    // ═══════════════════════════════════════════════════════════════
+
+    async function fetchOnThisDay() {
+      const el = document.getElementById('otd-list');
+      try {
+        const now   = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day   = String(now.getDate()).padStart(2, '0');
+
+        document.getElementById('otd-title').textContent =
+          `On this day · ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`;
+
+        const res  = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`);
+        const data = await res.json();
+        const events = (data.events ?? []).filter(e => e.year && e.text);
+
+        // Pick 4 at random from the pool
+        const shuffled = events.sort(() => Math.random() - 0.5).slice(0, 4);
+
+        el.innerHTML = shuffled.map(e => `
+          <div class="otd-item">
+            <span class="otd-year">${e.year}</span>
+            <span class="otd-text">${e.text}</span>
+          </div>`).join('');
+      } catch {
+        el.innerHTML = '<span class="state-error">⚠ Couldn\'t load events.</span>';
+      }
+    }
+
+    fetchOnThisDay();
+
+    // ═══════════════════════════════════════════════════════════════
+    //  OSRS GRAND EXCHANGE  (prices.runescape.wiki — no key)
+    // ═══════════════════════════════════════════════════════════════
+
+    // Curated list of popular tradeable items (id → name)
+    const GE_POPULAR = [
+      {id:4151,  name:'Abyssal whip'},       {id:12931, name:'Toxic blowpipe'},
+      {id:11802, name:'Armadyl godsword'},   {id:11806, name:'Bandos chestplate'},
+      {id:11808, name:'Bandos tassets'},     {id:11838, name:'Armadyl chestplate'},
+      {id:11840, name:'Armadyl chainskirt'}, {id:21043, name:'Twisted bow'},
+      {id:22325, name:'Scythe of vitur'},    {id:22516, name:"Tumeken's shadow"},
+      {id:20997, name:'Ancestral robe top'}, {id:21021, name:'Elder maul'},
+      {id:12006, name:'Berserker ring'},     {id:11283, name:'Abyssal dagger'},
+      {id:12934, name:"Zulrah's scales"},    {id:4587,  name:'Dragon scimitar'},
+      {id:536,   name:'Dragon bones'},       {id:561,   name:'Nature rune'},
+      {id:560,   name:'Death rune'},         {id:565,   name:'Blood rune'},
+      {id:9075,  name:'Astral rune'},        {id:562,   name:'Chaos rune'},
+      {id:385,   name:'Shark'},              {id:391,   name:'Manta ray'},
+      {id:3142,  name:'Raw karambwan'},      {id:3144,  name:'Cooked karambwan'},
+      {id:2992,  name:'Prayer potion (4)'},  {id:3024,  name:'Super restore (4)'},
+      {id:1785,  name:'Grimy ranarr weed'},  {id:211,   name:'Ranarr weed'},
+      {id:1519,  name:'Magic logs'},         {id:1521,  name:'Yew logs'},
+      {id:444,   name:'Runite ore'},         {id:2351,  name:'Runite bar'},
+      {id:453,   name:'Coal'},               {id:1942,  name:'Pure essence'},
+      {id:5321,  name:'Snape grass'},        {id:3051,  name:'Ranarr potion (unf)'},
+      {id:1149,  name:'Dragon med helm'},    {id:11832, name:'Zamorakian spear'},
+      {id:4798,  name:'Ranging potion (4)'}, {id:8780,  name:'Magic plank'},
+      {id:1377,  name:'Dragon battleaxe'},   {id:2359,  name:'Steel bar'},
+      {id:447,   name:'Gold ore'},           {id:554,   name:'Fire rune'},
+      {id:7936,  name:'Raw bird meat'},      {id:379,   name:'Lobster'},
+      {id:13576, name:'Abyssal tentacle'},   {id:12932, name:'Tanzanite fang'},
+    ];
+
+    const GE_KEY = 'startpage_ge_items';
+    const GE_DEFAULT = [4151, 12934, 561, 385, 536, 565];
+
+    function loadGeItems() {
+      try {
+        const s = localStorage.getItem(GE_KEY);
+        return s ? JSON.parse(s) : GE_DEFAULT.map(id => GE_POPULAR.find(i => i.id === id)).filter(Boolean);
+      } catch { return GE_DEFAULT.map(id => GE_POPULAR.find(i => i.id === id)).filter(Boolean); }
+    }
+
+    function saveGeItems(list) { localStorage.setItem(GE_KEY, JSON.stringify(list)); }
+
+    function fmtGp(n) {
+      if (!n || isNaN(n)) return '—';
+      if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+      if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return n.toLocaleString();
+    }
+
+    async function fetchGePrices() {
+      const items = loadGeItems();
+      if (!items.length) { document.getElementById('ge-list').innerHTML = ''; return; }
+      try {
+        const ids = items.map(i => i.id).join('|');
+        const res  = await fetch(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${ids}`);
+        const data = await res.json();
+        renderGePrices(items, data.data ?? {}, {});
+      } catch {
+        document.getElementById('ge-list').innerHTML = '<span class="state-error">⚠ Couldn\'t load GE prices.</span>';
+      }
+    }
+
+    function renderGePrices(items, latest, hour) {
+      document.getElementById('ge-list').innerHTML = items.map((item, idx) => {
+        const l      = latest[item.id] ?? {};
+        const buy    = l.high ?? null;   // instant buy  (you pay this)
+        const sell   = l.low  ?? null;   // instant sell (you receive this)
+        const margin = buy && sell ? buy - sell : null;
+
+        return `
+          <div class="ge-row">
+            <span class="ge-name">${item.name}</span>
+            <div class="ge-prices">
+              <div class="ge-price-group">
+                <span class="ge-price-label buy">Buy</span>
+                <span class="ge-price-val buy">${fmtGp(buy)}</span>
+              </div>
+              <div class="ge-price-group">
+                <span class="ge-price-label sell">Sell</span>
+                <span class="ge-price-val sell">${fmtGp(sell)}</span>
+              </div>
+              <div class="ge-price-group">
+                <span class="ge-price-label margin">Margin</span>
+                <span class="ge-price-val margin">${fmtGp(margin)}</span>
+              </div>
+              <button class="ge-del" data-idx="${idx}" title="Remove">✕</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      document.querySelectorAll('.ge-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const list = loadGeItems();
+          list.splice(parseInt(btn.dataset.idx), 1);
+          saveGeItems(list);
+          fetchGePrices();
+        });
+      });
+    }
+
+    // GE edit mode
+    const geEditBtn    = document.getElementById('ge-edit-btn');
+    const geSearchWrap = document.getElementById('ge-search-wrap');
+    const geSearchEl   = document.getElementById('ge-search');
+    const geResultsEl  = document.getElementById('ge-results');
+    const geTileEl     = document.getElementById('ge-tile');
+
+    geEditBtn.addEventListener('click', () => {
+      const editing = geTileEl.classList.toggle('editing-ge');
+      geEditBtn.textContent = editing ? 'Done' : 'Edit';
+      geEditBtn.classList.toggle('active', editing);
+      geSearchWrap.classList.toggle('visible', editing);
+      geResultsEl.style.display = 'none';
+      if (editing) geSearchEl.focus();
+      renderGePrices(loadGeItems(), {}, {});
+      if (editing) fetchGePrices();
+    });
+
+    geSearchEl.addEventListener('input', () => {
+      const q = geSearchEl.value.toLowerCase().trim();
+      if (!q) { geResultsEl.style.display = 'none'; return; }
+      const current = loadGeItems().map(i => i.id);
+      const matches = GE_POPULAR.filter(i =>
+        i.name.toLowerCase().includes(q) && !current.includes(i.id)
+      ).slice(0, 8);
+      if (!matches.length) { geResultsEl.style.display = 'none'; return; }
+      geResultsEl.style.display = 'block';
+      geResultsEl.innerHTML = matches.map(i =>
+        `<div class="ge-result-item" data-id="${i.id}" data-name="${i.name}">${i.name}</div>`
+      ).join('');
+      geResultsEl.querySelectorAll('.ge-result-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const list = loadGeItems();
+          list.push({ id: +el.dataset.id, name: el.dataset.name });
+          saveGeItems(list);
+          geSearchEl.value = '';
+          geResultsEl.style.display = 'none';
+          fetchGePrices();
+        });
+      });
+    });
+
+    document.addEventListener('click', e => {
+      if (!geSearchWrap.contains(e.target)) geResultsEl.style.display = 'none';
+    });
+
+    fetchGePrices();
+    setInterval(fetchGePrices, 5 * 60 * 1000); // refresh every 5 min
+
+    // ═══════════════════════════════════════════════════════════════
+    //  NASA APOD  (DEMO_KEY — cached daily in localStorage)
+    // ═══════════════════════════════════════════════════════════════
+
+    async function fetchApod() {
+      const TODAY   = new Date().toISOString().slice(0, 10);
+      const CACHE   = 'startpage_apod';
+      const spinner = document.getElementById('apod-spinner');
+      const img     = document.getElementById('apod-img');
+      const title   = document.getElementById('apod-title');
+      const desc    = document.getElementById('apod-desc');
+      const link    = document.getElementById('apod-link');
+
+      try {
+        // Use cached data if it's from today
+        let apod;
+        try {
+          const cached = JSON.parse(localStorage.getItem(CACHE) ?? 'null');
+          if (cached?.date === TODAY) apod = cached;
+        } catch {}
+
+        if (!apod) {
+          const res  = await fetch(`https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY`);
+          apod = await res.json();
+          if (apod.date) localStorage.setItem(CACHE, JSON.stringify(apod));
+        }
+
+        title.textContent = apod.title ?? '';
+        desc.textContent  = apod.explanation ?? '';
+        link.href         = apod.hdurl || apod.url || '#';
+
+        if (apod.media_type === 'video') {
+          spinner.style.display = 'none';
+          document.getElementById('apod-tile').innerHTML = `
+            <div class="apod-video-placeholder">
+              <span style="font-size:2rem">🎬</span>
+              <span>Today's APOD is a video</span>
+              <a href="${apod.url}" target="_blank" rel="noopener">${apod.title} ↗</a>
+              <span style="font-size:0.75rem;color:var(--text-faint);max-width:400px;text-align:center">${(apod.explanation ?? '').slice(0, 160)}…</span>
+            </div>`;
+        } else {
+          img.onload = () => {
+            spinner.style.display = 'none';
+            img.classList.remove('loading');
+          };
+          img.onerror = () => { spinner.textContent = '⚠ Image unavailable.'; };
+          img.src = apod.url;
+        }
+      } catch {
+        spinner.textContent = '⚠ Couldn\'t load APOD.';
+      }
+    }
+
+    fetchApod();
+
+    // ═══════════════════════════════════════════════════════════════
+    //  MANED WOLF  (iNaturalist — free, no API key, CORS-friendly)
+    // ═══════════════════════════════════════════════════════════════
+
+    let wolfPool = [];
+    let wolfSeen = new Set();
+
+    async function fetchWolfPool() {
+      // Research-grade observations of Chrysocyon brachyurus with photos,
+      // sorted by community votes so we get the best shots first.
+      const url = `https://api.inaturalist.org/v1/observations`
+        + `?taxon_name=Chrysocyon+brachyurus`
+        + `&photos=true&quality_grade=research`
+        + `&per_page=100&order_by=votes&order=desc`;
+      const res  = await fetch(url);
+      const data = await res.json();
+
+      // Flatten: one entry per photo across all observations
+      wolfPool = (data.results ?? []).flatMap(obs =>
+        (obs.photos ?? []).map(photo => ({
+          // iNaturalist photo URLs use size suffixes: square/small/medium/large/original
+          imgUrl:  photo.url.replace(/\/square\b/, '/large'),
+          pageUrl: `https://www.inaturalist.org/observations/${obs.id}`,
+          place:   obs.place_guess ?? '',
+          observer: obs.user?.name || obs.user?.login || '',
+          attribution: photo.attribution ?? '',
+        }))
+      ).filter(p => p.imgUrl);
+    }
+
+    async function loadWolf() {
+      const img     = document.getElementById('wolf-img');
+      const caption = document.getElementById('wolf-caption');
+      const spinner = document.getElementById('wolf-spinner');
+
+      spinner.style.display = 'flex';
+      spinner.textContent   = 'Loading wolf…';
+      img.classList.add('loading');
+
+      try {
+        if (!wolfPool.length) await fetchWolfPool();
+        if (!wolfPool.length) throw new Error('empty');
+
+        // Cycle without repeats; reset when pool exhausted
+        if (wolfSeen.size >= wolfPool.length) wolfSeen.clear();
+        const unseen     = wolfPool.filter((_, i) => !wolfSeen.has(i));
+        const pick       = unseen[Math.floor(Math.random() * unseen.length)];
+        wolfSeen.add(wolfPool.indexOf(pick));
+
+        img.onload = () => {
+          spinner.style.display = 'none';
+          img.classList.remove('loading');
+          const parts = [
+            pick.place,
+            pick.observer ? `© ${pick.observer}` : '',
+          ].filter(Boolean).join(' · ');
+          caption.innerHTML =
+            `<a href="${pick.pageUrl}" target="_blank" rel="noopener">`
+            + (parts || 'View on iNaturalist')
+            + `</a> · iNaturalist`;
+        };
+        img.onerror = () => {
+          // Fall back to medium size if large isn't available
+          if (pick.imgUrl.includes('/large')) {
+            img.src = pick.imgUrl.replace('/large', '/medium');
+          } else {
+            spinner.textContent = 'Image unavailable — try ↺';
+            spinner.style.display = 'flex';
+          }
+        };
+        img.src = pick.imgUrl;
+
+      } catch {
+        spinner.textContent = '⚠ Couldn\'t load wolf — check network.';
+      }
+    }
+
+    document.getElementById('wolf-next').addEventListener('click', loadWolf);
+    loadWolf();
 
     // ═══════════════════════════════════════════════════════════════
     //  GENERATIVE ART — Perlin-noise flow field
