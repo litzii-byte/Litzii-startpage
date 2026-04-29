@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d0905;
+      --tile-bg:     rgba(255, 242, 225, 0.07);
+      --tile-border: rgba(255, 210, 155, 0.13);
+      --accent:      #e08a50;
+      --text:        #f0e4d2;
+      --text-muted:  #9a8070;
+      --text-faint:  #564030;
+      --shadow:      rgba(0, 0, 0, 0.45);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Nunito', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 24px 28px;
+      gap: 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── Noisy gradient blobs ───────────────────────────────────────────── */
+
+    /* Hidden SVG that defines the grain filter */
+    .svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+    .bg-blobs {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: url(#grain-filter);
+    }
+
+    /* Warm orange-red — upper right */
+    .blob-1 {
+      width: 620px;
+      height: 620px;
+      background: radial-gradient(circle at 38% 40%,
+        #d4623e 0%, #8f2218 42%, #2a0808 78%, transparent 100%);
+      top: -180px;
+      right: -130px;
+      opacity: 0.80;
+    }
+
+    /* Deep teal — lower left */
+    .blob-2 {
+      width: 540px;
+      height: 540px;
+      background: radial-gradient(circle at 52% 48%,
+        #1e7d8c 0%, #0c3a48 48%, #020c10 78%, transparent 100%);
+      bottom: -150px;
+      left: -100px;
+      opacity: 0.72;
+    }
+
+    /* Dark magenta-rose — upper left / center */
+    .blob-3 {
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle at 48% 42%,
+        #7a2045 0%, #3d0d22 52%, #0e0308 80%, transparent 100%);
+      top: 60px;
+      left: 12%;
+      opacity: 0.58;
+    }
+
+    /* Ensure content sits above blobs */
+    header, section, main, footer { position: relative; z-index: 1; }
+
+    /* ── Header ──────────────────────────────────────────────────────────── */
+    .header {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .greeting {
+      font-family: 'Lora', serif;
+      font-size: 1.45rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .clock-block { text-align: right; }
+
+    .clock {
+      font-family: 'Lora', serif;
+      font-size: 3rem;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .date-display {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* ── Search ──────────────────────────────────────────────────────────── */
+    .search-section {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .search-bar {
+      display: flex;
+      background: rgba(255, 242, 225, 0.08);
+      border: 1.5px solid rgba(255, 210, 155, 0.18);
+      border-radius: 50px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .search-bar:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 4px 28px rgba(0,0,0,0.55), 0 0 0 1px rgba(224,138,80,0.25);
+    }
+
+    .search-icon {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      color: var(--text);
+      padding: 14px 0;
+      min-width: 0;
+    }
+
+    .search-input::placeholder { color: var(--text-faint); }
+
+    .engine-toggle {
+      display: flex;
+      gap: 3px;
+      padding: 6px;
+      flex-shrink: 0;
+    }
+
+    .engine-btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 50px;
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      background: transparent;
+      color: var(--text-muted);
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+
+    .engine-btn.active      { background: var(--accent); color: #1a0a03; }
+    .engine-btn:hover:not(.active) { background: rgba(255,255,255,0.10); color: var(--text); }
+
+    /* ── Grid ────────────────────────────────────────────────────────────── */
+    .grid {
+      width: 100%;
+      max-width: 960px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .tile {
+      background: var(--tile-bg);
+      border: 1.5px solid var(--tile-border);
+      border-radius: 20px;
+      padding: 22px 24px;
+      box-shadow: 0 4px 28px rgba(0,0,0,0.45);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .tile-title {
+      font-size: 0.70rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-faint);
+      margin-bottom: 16px;
+    }
+
+    /* ── Bookmarks ───────────────────────────────────────────────────────── */
+    .bookmarks-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .bookmark {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      padding: 10px 6px;
+      border-radius: 12px;
+      transition: background 0.15s;
+      color: var(--text);
+    }
+
+    .bookmark:hover { background: rgba(255,255,255,0.07); }
+
+    .bookmark img {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+    }
+
+    .bookmark span {
+      font-size: 0.70rem;
+      text-align: center;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60px;
+    }
+
+    /* ── Weather ─────────────────────────────────────────────────────────── */
+    .weather-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .temp-toggle {
+      display: flex;
+      border: 1.5px solid rgba(255, 210, 155, 0.20);
+      border-radius: 50px;
+      overflow: hidden;
+    }
+
+    .temp-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      color: var(--text-muted);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .temp-btn.active { background: var(--accent); color: #1a0a03; }
+
+    .weather-locations { display: flex; flex-direction: column; gap: 11px; }
+
+    .weather-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .weather-city      { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .weather-icon      { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+    .weather-name      { font-size: 0.92rem; font-weight: 500; }
+    .weather-desc      { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+    .weather-local-time { font-size: 0.68rem; color: var(--text-faint); margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .weather-temps     { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; }
+    .weather-temp-primary   { font-size: 1rem; font-weight: 700; color: var(--accent); }
+    .weather-temp-secondary { font-size: 0.72rem; color: var(--text-faint); }
+
+    /* ── Weather editing ─────────────────────────────────────────────────── */
+    .wx-delete {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #c06055;
+      border: none;
+      color: white;
+      font-size: 0.65rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .editing-weather .wx-delete { display: flex; }
+    .editing-weather .weather-row { opacity: 0.8; }
+
+    .wx-add-row {
+      display: none;
+      gap: 6px;
+      margin-top: 12px;
+      align-items: center;
+    }
+
+    .wx-add-row.visible { display: flex; }
+
+    .wx-geocode-status {
+      font-size: 0.72rem;
+      color: var(--text-faint);
+      font-style: italic;
+      margin-top: 6px;
+      min-height: 1em;
+    }
+
+    .wx-geocode-status.err { color: #c06055; font-style: normal; }
+
+    /* ── Art tile ────────────────────────────────────────────────────────── */
+    .tile.art {
+      grid-column: 1 / -1;
+      padding: 0;
+      overflow: hidden;
+      height: 210px;
+      position: relative;
+    }
+
+    #art-canvas { width: 100%; height: 100%; display: block; }
+
+    .art-regen {
+      position: absolute;
+      bottom: 10px;
+      right: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255, 210, 150, 0.4);
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      letter-spacing: 0.04em;
+      backdrop-filter: blur(4px);
+      transition: background 0.15s, color 0.15s, opacity 0.15s;
+      opacity: 0;
+    }
+
+    .tile.art:hover .art-regen { opacity: 1; }
+    .art-regen:hover { background: rgba(255,255,255,0.16); color: rgba(255,210,150,0.9); }
+
+    /* ── Bookmark editing ───────────────────────────────────────────────── */
+    .bookmarks-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .bm-edit-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--text-faint);
+      font-size: 0.78rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      letter-spacing: 0.03em;
+    }
+
+    .bm-edit-btn:hover  { color: var(--accent); background: rgba(255,255,255,0.06); }
+    .bm-edit-btn.active { color: var(--accent); }
+
+    /* Delete overlay on each bookmark in edit mode */
+    .bookmark { position: relative; }
+
+    .bm-delete {
+      display: none;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #c06055;
+      border: none;
+      color: white;
+      font-size: 0.65rem;
+      line-height: 1;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      padding: 0;
+      z-index: 2;
+    }
+
+    .editing-bookmarks .bm-delete { display: flex; }
+
+    /* Mute bookmark links while in edit mode */
+    .editing-bookmarks .bookmark { opacity: 0.7; pointer-events: none; }
+    .editing-bookmarks .bm-delete { pointer-events: auto; }
+
+    /* Add bookmark row */
+    .bm-add-row {
+      display: none;
+      gap: 6px;
+      margin-top: 12px;
+      align-items: center;
+    }
+
+    .bm-add-row.visible { display: flex; }
+
+    .bm-input {
+      flex: 1;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid var(--tile-border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.78rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+      min-width: 0;
+    }
+
+    .bm-input::placeholder { color: var(--text-faint); }
+    .bm-input:focus { border-color: var(--accent); }
+
+    .bm-add-confirm {
+      border: none;
+      background: var(--accent);
+      color: #1a0a03;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+
+    .bm-add-confirm:hover { opacity: 0.85; }
+
+    /* ── States ──────────────────────────────────────────────────────────── */
+    .state-loading { color: var(--text-faint); font-size: 0.83rem; font-style: italic; }
+    .state-error   { color: #c06055; font-size: 0.82rem; }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    footer {
+      font-size: 0.76rem;
+      color: var(--text-faint);
+      text-align: center;
+      margin-top: auto;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+    @media (max-width: 620px) {
+      body { padding: 24px 16px 20px; }
+      .grid { grid-template-columns: 1fr; }
+      .tile.art { grid-column: 1; }
+      .header { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .clock-block { text-align: left; }
+      .clock { font-size: 2.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Grain filter (SVG) ──────────────────────────────────────────────── -->
+  <!--
+    feTurbulence generates fractal noise.
+    feColorMatrix desaturates it to grayscale.
+    feBlend (multiply) darkens the gradient through the noise mask.
+    feComposite clips the result back to the source shape.
+  -->
+  <svg class="svg-defs" aria-hidden="true">
+    <defs>
+      <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%"
+              color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.62" numOctaves="4"
+                      stitchTiles="stitch" result="noiseOut"/>
+        <feColorMatrix type="saturate" values="0" in="noiseOut" result="grayNoise"/>
+        <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blended"/>
+        <feComposite operator="in" in="blended" in2="SourceGraphic"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- ── Background blobs ───────────────────────────────────────────────── -->
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="greeting" id="greeting">Good evening</div>
+    <div class="clock-block">
+      <div class="clock" id="clock">00:00:00</div>
+      <div class="date-display" id="date-display"></div>
+    </div>
+  </header>
+
+  <!-- ── Search ─────────────────────────────────────────────────────────── -->
+  <section class="search-section">
+    <div class="search-bar">
+      <div class="search-icon">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2"
+             viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>
+      <input class="search-input" id="search-input" type="text"
+             placeholder="Search the web…" autocomplete="off" spellcheck="false">
+      <div class="engine-toggle" id="engine-toggle">
+        <button class="engine-btn active" data-engine="google">Google</button>
+        <button class="engine-btn"        data-engine="ddg">DDG</button>
+        <button class="engine-btn"        data-engine="brave">Brave</button>
+        <button class="engine-btn"        data-engine="bing">Bing</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Grid ───────────────────────────────────────────────────────────── -->
+  <main class="grid">
+
+    <!-- Bookmarks -->
+    <div class="tile" id="bookmarks-tile">
+      <div class="bookmarks-header">
+        <div class="tile-title" style="margin-bottom:0">Bookmarks</div>
+        <button class="bm-edit-btn" id="bm-edit-btn">Edit</button>
+      </div>
+      <div class="bookmarks-grid" id="bookmarks-grid"></div>
+      <div class="bm-add-row" id="bm-add-row">
+        <input class="bm-input" id="bm-name" placeholder="Name" maxlength="20">
+        <input class="bm-input" id="bm-url"  placeholder="https://…">
+        <button class="bm-add-confirm" id="bm-add-confirm">Add</button>
+      </div>
+    </div>
+
+    <!-- Weather -->
+    <div class="tile" id="weather-tile">
+      <div class="weather-header">
+        <div class="tile-title" style="margin-bottom:0">Weather</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="bm-edit-btn" id="wx-edit-btn">Edit</button>
+          <div class="temp-toggle" id="temp-toggle">
+            <button class="temp-btn active" data-unit="C">°C</button>
+            <button class="temp-btn"        data-unit="F">°F</button>
+          </div>
+        </div>
+      </div>
+      <div class="weather-locations" id="weather-locations">
+        <span class="state-loading">Fetching weather…</span>
+      </div>
+      <div class="wx-add-row" id="wx-add-row">
+        <input class="bm-input" id="wx-city-input" placeholder="City name…" maxlength="60">
+        <button class="bm-add-confirm" id="wx-add-confirm">Add</button>
+      </div>
+      <div class="wx-geocode-status" id="wx-geocode-status"></div>
+    </div>
+
+    <!-- Generative Art -->
+    <div class="tile art">
+      <button class="art-regen" id="art-regen">↺</button>
+      <canvas id="art-canvas"></canvas>
+    </div>
+
+  </main>
+
+  <footer>
+    Set as Firefox new tab with
+    <a href="https://addons.mozilla.org/firefox/addon/new-tab-override/" target="_blank">New Tab Override</a>
+    — point it to this file's path on disk.
+  </footer>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    //  CONFIG — edit these to personalise your startpage
+    // ═══════════════════════════════════════════════════════════════
+
+    // Weather locations — swap lat/lon for any city you like
+    // Find coordinates at: https://www.latlong.net/
+    const LOCATIONS = [
+      { name: "New York",  lat: 40.7128, lon: -74.0060 },
+      { name: "London",    lat: 51.5074, lon:  -0.1278 },
+      { name: "Tokyo",     lat: 35.6762, lon: 139.6503 },
+    ];
+
+    // Bookmarks — add, remove, or reorder as you like
+    const BOOKMARKS = [
+      { name: "YouTube",     url: "https://youtube.com"           },
+      { name: "GitHub",      url: "https://github.com"            },
+      { name: "Reddit",      url: "https://reddit.com"            },
+      { name: "Hacker News", url: "https://news.ycombinator.com"  },
+      { name: "Wikipedia",   url: "https://wikipedia.org"         },
+      { name: "Twitch",      url: "https://twitch.tv"             },
+      { name: "Twitter / X", url: "https://x.com"                 },
+      { name: "Gmail",       url: "https://mail.google.com"       },
+    ];
+
+    const ENGINES = {
+      google: q => `https://www.google.com/search?q=${q}`,
+      ddg:    q => `https://duckduckgo.com/?q=${q}`,
+      brave:  q => `https://search.brave.com/search?q=${q}`,
+      bing:   q => `https://www.bing.com/search?q=${q}`,
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    //  CLOCK
+    // ═══════════════════════════════════════════════════════════════
+
+    const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+
+    function updateClock() {
+      const now = new Date();
+      const h   = String(now.getHours()).padStart(2, '0');
+      const m   = String(now.getMinutes()).padStart(2, '0');
+      const s   = String(now.getSeconds()).padStart(2, '0');
+
+      document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+      document.getElementById('date-display').textContent =
+        `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+
+      const hr = now.getHours();
+      let greeting = 'Good evening';
+      if      (hr >= 5  && hr < 12) greeting = 'Good morning ☀️';
+      else if (hr >= 12 && hr < 17) greeting = 'Good afternoon';
+      else if (hr >= 17 && hr < 21) greeting = 'Good evening 🌅';
+      document.getElementById('greeting').textContent = greeting;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ═══════════════════════════════════════════════════════════════
+    //  SEARCH
+    // ═══════════════════════════════════════════════════════════════
+
+    let currentEngine = 'google';
+
+    document.getElementById('engine-toggle').addEventListener('click', e => {
+      const btn = e.target.closest('.engine-btn');
+      if (!btn) return;
+      currentEngine = btn.dataset.engine;
+      document.querySelectorAll('.engine-btn')
+              .forEach(b => b.classList.toggle('active', b === btn));
+      document.getElementById('search-input').focus();
+    });
+
+    document.getElementById('search-input').addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const q = e.target.value.trim();
+      if (q) window.location.href = ENGINES[currentEngine](encodeURIComponent(q));
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  BOOKMARKS  (editable, persisted in localStorage)
+    // ═══════════════════════════════════════════════════════════════
+
+    const BM_KEY = 'startpage_bookmarks';
+
+    function loadBookmarks() {
+      try {
+        const saved = localStorage.getItem(BM_KEY);
+        return saved ? JSON.parse(saved) : [...BOOKMARKS];
+      } catch { return [...BOOKMARKS]; }
+    }
+
+    function saveBookmarks(list) {
+      localStorage.setItem(BM_KEY, JSON.stringify(list));
+    }
+
+    function renderBookmarks() {
+      const list   = loadBookmarks();
+      const grid   = document.getElementById('bookmarks-grid');
+      const tile   = document.getElementById('bookmarks-tile');
+      const isEdit = tile.classList.contains('editing-bookmarks');
+      grid.innerHTML = '';
+
+      list.forEach((bm, idx) => {
+        let domain = '#';
+        try { domain = new URL(bm.url).hostname; } catch {}
+        const a = document.createElement('a');
+        a.className = 'bookmark';
+        a.href = bm.url;
+        a.innerHTML = `
+          <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32"
+               alt="" loading="lazy" onerror="this.style.opacity='0'">
+          <span>${bm.name}</span>
+          <button class="bm-delete" data-idx="${idx}" title="Remove">✕</button>`;
+        grid.appendChild(a);
+      });
+
+      // Wire delete buttons
+      grid.querySelectorAll('.bm-delete').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.preventDefault();
+          const i = parseInt(btn.dataset.idx);
+          const list = loadBookmarks();
+          list.splice(i, 1);
+          saveBookmarks(list);
+          renderBookmarks();
+        });
+      });
+    }
+
+    // Edit toggle
+    const editBtn  = document.getElementById('bm-edit-btn');
+    const addRow   = document.getElementById('bm-add-row');
+    const tile     = document.getElementById('bookmarks-tile');
+
+    editBtn.addEventListener('click', () => {
+      const editing = tile.classList.toggle('editing-bookmarks');
+      editBtn.textContent = editing ? 'Done' : 'Edit';
+      editBtn.classList.toggle('active', editing);
+      addRow.classList.toggle('visible', editing);
+      if (editing) document.getElementById('bm-name').focus();
+      renderBookmarks();
+    });
+
+    // Add bookmark
+    function addBookmark() {
+      const nameEl = document.getElementById('bm-name');
+      const urlEl  = document.getElementById('bm-url');
+      let name = nameEl.value.trim();
+      let url  = urlEl.value.trim();
+      if (!name || !url) return;
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      const list = loadBookmarks();
+      list.push({ name, url });
+      saveBookmarks(list);
+      nameEl.value = '';
+      urlEl.value  = '';
+      nameEl.focus();
+      renderBookmarks();
+    }
+
+    document.getElementById('bm-add-confirm').addEventListener('click', addBookmark);
+    document.getElementById('bm-url').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addBookmark();
+    });
+    document.getElementById('bm-name').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('bm-url').focus();
+    });
+
+    renderBookmarks();
+
+    // ═══════════════════════════════════════════════════════════════
+    //  WEATHER  (Open-Meteo — free, no API key needed)
+    // ═══════════════════════════════════════════════════════════════
+
+    const WMO = {
+      0:  ['☀️',  'Clear sky'],        1:  ['🌤️', 'Mainly clear'],
+      2:  ['⛅',  'Partly cloudy'],     3:  ['☁️',  'Overcast'],
+      45: ['🌫️', 'Foggy'],            48: ['🌫️', 'Icy fog'],
+      51: ['🌦️', 'Light drizzle'],    53: ['🌦️', 'Drizzle'],      55: ['🌧️', 'Heavy drizzle'],
+      61: ['🌧️', 'Light rain'],       63: ['🌧️', 'Moderate rain'], 65: ['🌧️', 'Heavy rain'],
+      71: ['🌨️', 'Light snow'],       73: ['🌨️', 'Moderate snow'], 75: ['❄️',  'Heavy snow'],
+      80: ['🌦️', 'Showers'],          81: ['🌧️', 'Heavy showers'], 82: ['⛈️',  'Violent showers'],
+      95: ['⛈️',  'Thunderstorm'],     96: ['⛈️',  'Hail'],         99: ['⛈️',  'Heavy hail'],
+    };
+
+    const WX_KEY = 'startpage_locations';
+
+    function loadLocations() {
+      try {
+        const saved = localStorage.getItem(WX_KEY);
+        return saved ? JSON.parse(saved) : [...LOCATIONS];
+      } catch { return [...LOCATIONS]; }
+    }
+
+    function saveLocations(list) {
+      localStorage.setItem(WX_KEY, JSON.stringify(list));
+    }
+
+    // Format local time for a given IANA timezone string
+    function localTime(tz) {
+      try {
+        return new Date().toLocaleTimeString('en-GB', {
+          timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false,
+        });
+      } catch { return ''; }
+    }
+
+    let weatherCache = [];
+    let tempUnit = 'C';
+
+    async function fetchWeather() {
+      const locs = loadLocations();
+      const container = document.getElementById('weather-locations');
+      if (!locs.length) { container.innerHTML = ''; return; }
+      try {
+        weatherCache = await Promise.all(locs.map(async (loc, idx) => {
+          const url = `https://api.open-meteo.com/v1/forecast`
+            + `?latitude=${loc.lat}&longitude=${loc.lon}`
+            + `&current=temperature_2m,weather_code&timezone=auto`;
+          const res  = await fetch(url);
+          const data = await res.json();
+          const c    = data.current;
+          return {
+            idx,
+            name:     loc.name,
+            tempC:    Math.round(c.temperature_2m),
+            tempF:    Math.round(c.temperature_2m * 9 / 5 + 32),
+            code:     c.weather_code,
+            timezone: data.timezone ?? null,
+          };
+        }));
+        renderWeather();
+      } catch {
+        container.innerHTML = `<span class="state-error">⚠ Couldn't load weather — check your network.</span>`;
+      }
+    }
+
+    function renderWeather() {
+      if (!weatherCache.length) {
+        document.getElementById('weather-locations').innerHTML = '';
+        return;
+      }
+      const isPrimC   = tempUnit === 'C';
+      const wxTile    = document.getElementById('weather-tile');
+      const isEditing = wxTile.classList.contains('editing-weather');
+
+      document.getElementById('weather-locations').innerHTML =
+        weatherCache.map(d => {
+          const primary   = isPrimC ? `${d.tempC}°C` : `${d.tempF}°F`;
+          const secondary = isPrimC ? `${d.tempF}°F` : `${d.tempC}°C`;
+          const [icon, desc] = WMO[d.code] ?? ['🌡️', 'Unknown'];
+          const lt = d.timezone ? localTime(d.timezone) : '';
+          return `
+            <div class="weather-row">
+              <div class="weather-city">
+                <span class="weather-icon">${icon}</span>
+                <div>
+                  <div class="weather-name">${d.name}</div>
+                  <div class="weather-desc">${desc}</div>
+                  ${lt ? `<div class="weather-local-time">${lt} local</div>` : ''}
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="weather-temps">
+                  <div class="weather-temp-primary">${primary}</div>
+                  <div class="weather-temp-secondary">${secondary}</div>
+                </div>
+                <button class="wx-delete" data-idx="${d.idx}" title="Remove">✕</button>
+              </div>
+            </div>`;
+        }).join('');
+
+      // Wire delete buttons
+      document.querySelectorAll('.wx-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const list = loadLocations();
+          list.splice(parseInt(btn.dataset.idx), 1);
+          saveLocations(list);
+          fetchWeather();
+        });
+      });
+    }
+
+    // Tick local times every 30 seconds without re-fetching weather
+    function tickLocalTimes() {
+      document.querySelectorAll('[data-tz]').forEach(el => {
+        el.textContent = localTime(el.dataset.tz) + ' local';
+      });
+    }
+    setInterval(tickLocalTimes, 30_000);
+
+    // Temp unit toggle
+    document.getElementById('temp-toggle').addEventListener('click', e => {
+      const btn = e.target.closest('.temp-btn');
+      if (!btn) return;
+      tempUnit = btn.dataset.unit;
+      document.querySelectorAll('.temp-btn')
+              .forEach(b => b.classList.toggle('active', b === btn));
+      renderWeather();
+    });
+
+    // ── Weather edit mode ───────────────────────────────────────────
+    const wxEditBtn    = document.getElementById('wx-edit-btn');
+    const wxAddRow     = document.getElementById('wx-add-row');
+    const wxTile       = document.getElementById('weather-tile');
+    const wxStatus     = document.getElementById('wx-geocode-status');
+    const wxCityInput  = document.getElementById('wx-city-input');
+
+    wxEditBtn.addEventListener('click', () => {
+      const editing = wxTile.classList.toggle('editing-weather');
+      wxEditBtn.textContent = editing ? 'Done' : 'Edit';
+      wxEditBtn.classList.toggle('active', editing);
+      wxAddRow.classList.toggle('visible', editing);
+      wxStatus.textContent = '';
+      if (editing) wxCityInput.focus();
+      renderWeather();
+    });
+
+    // Geocode city name → { name, lat, lon } using Open-Meteo geocoding
+    async function geocodeCity(query) {
+      const url = `https://geocoding-api.open-meteo.com/v1/search`
+        + `?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
+      const res  = await fetch(url);
+      const data = await res.json();
+      if (!data.results?.length) return null;
+      const r = data.results[0];
+      return {
+        name: r.name + (r.country_code ? `, ${r.country_code}` : ''),
+        lat:  r.latitude,
+        lon:  r.longitude,
+      };
+    }
+
+    async function addLocation() {
+      const city = wxCityInput.value.trim();
+      if (!city) return;
+      wxStatus.className = 'wx-geocode-status';
+      wxStatus.textContent = 'Looking up…';
+      document.getElementById('wx-add-confirm').disabled = true;
+      try {
+        const loc = await geocodeCity(city);
+        if (!loc) {
+          wxStatus.className = 'wx-geocode-status err';
+          wxStatus.textContent = `Couldn't find "${city}" — try a different spelling.`;
+        } else {
+          const list = loadLocations();
+          list.push(loc);
+          saveLocations(list);
+          wxCityInput.value = '';
+          wxStatus.textContent = '';
+          await fetchWeather();
+        }
+      } catch {
+        wxStatus.className = 'wx-geocode-status err';
+        wxStatus.textContent = 'Network error — try again.';
+      }
+      document.getElementById('wx-add-confirm').disabled = false;
+      wxCityInput.focus();
+    }
+
+    document.getElementById('wx-add-confirm').addEventListener('click', addLocation);
+    wxCityInput.addEventListener('keydown', e => { if (e.key === 'Enter') addLocation(); });
+
+    fetchWeather();
+    setInterval(fetchWeather, 10 * 60 * 1000);
+
+    // ═══════════════════════════════════════════════════════════════
+    //  GENERATIVE ART — Perlin-noise flow field
+    // ═══════════════════════════════════════════════════════════════
+
+    class Perlin {
+      constructor() { this.reseed(); }
+      reseed() {
+        const p = Array.from({ length: 256 }, (_, i) => i);
+        for (let i = 255; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [p[i], p[j]] = [p[j], p[i]];
+        }
+        this.p = [...p, ...p];
+      }
+      _fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+      _lerp(t, a, b) { return a + t * (b - a); }
+      _grad(h, x, y) { h &= 3; return ((h & 1) ? -x : x) + ((h & 2) ? -y : y); }
+      noise(x, y) {
+        const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+        x -= Math.floor(x); y -= Math.floor(y);
+        const u = this._fade(x), v = this._fade(y);
+        const a = this.p[X] + Y, b = this.p[X + 1] + Y;
+        return this._lerp(v,
+          this._lerp(u, this._grad(this.p[a],     x,     y),
+                        this._grad(this.p[b],     x - 1, y)),
+          this._lerp(u, this._grad(this.p[a + 1], x,     y - 1),
+                        this._grad(this.p[b + 1], x - 1, y - 1)));
+      }
+    }
+
+    const PALETTE = [
+      '#e8955f','#d4714a','#f2b87e','#f7d4a8',
+      '#c96b3a','#f0a060','#ffe0b5','#d4956b',
+      '#ff7a45','#ffa070','#cc5533',
+    ];
+
+    const perlin  = new Perlin();
+    const canvas  = document.getElementById('art-canvas');
+    const ctx     = canvas.getContext('2d');
+    let particles = [];
+    let animId, t = 0;
+
+    function resizeCanvas() {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+
+    function makeParticle() {
+      return {
+        x:      Math.random() * canvas.width,
+        y:      Math.random() * canvas.height,
+        color:  PALETTE[Math.floor(Math.random() * PALETTE.length)],
+        speed:  0.6 + Math.random() * 1.4,
+        size:   0.8 + Math.random() * 1.8,
+        age:    0,
+        maxAge: 180 + Math.random() * 420,
+      };
+    }
+
+    function initArt() {
+      if (animId) cancelAnimationFrame(animId);
+      perlin.reseed();
+      resizeCanvas();
+      ctx.fillStyle = '#100806';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const count = Math.max(80, Math.floor(canvas.width * canvas.height / 2200));
+      particles = Array.from({ length: count }, makeParticle);
+      t = 0;
+      drawArt();
+    }
+
+    function drawArt() {
+      ctx.fillStyle = 'rgba(16, 8, 6, 0.045)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const scale = 0.0028, zoff = t * 0.00025;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        const angle = perlin.noise(p.x * scale, p.y * scale + zoff) * Math.PI * 4;
+        p.x += Math.cos(angle) * p.speed;
+        p.y += Math.sin(angle) * p.speed;
+        p.age++;
+
+        if (p.x < 0)             p.x += canvas.width;
+        if (p.x > canvas.width)  p.x -= canvas.width;
+        if (p.y < 0)             p.y += canvas.height;
+        if (p.y > canvas.height) p.y -= canvas.height;
+
+        const life  = p.age / p.maxAge;
+        const alpha = life < 0.1 ? life * 10 : life > 0.75 ? (1 - life) * 4 : 1;
+        const aHex  = Math.floor(Math.min(alpha, 1) * 210).toString(16).padStart(2, '0');
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + aHex;
+        ctx.fill();
+
+        if (p.age >= p.maxAge) particles[i] = makeParticle();
+      }
+
+      t++;
+      animId = requestAnimationFrame(drawArt);
+    }
+
+    document.getElementById('art-regen').addEventListener('click', initArt);
+
+    setTimeout(() => { resizeCanvas(); initArt(); }, 120);
+
+    window.addEventListener('resize', () => {
+      clearTimeout(window._rt);
+      window._rt = setTimeout(initArt, 220);
+    });
+  </script>
+</body>
+</html>
