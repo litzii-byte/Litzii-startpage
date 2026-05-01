@@ -353,29 +353,65 @@
       position: relative;
     }
 
-    #art-canvas { width: 100%; height: 100%; display: block; }
+    #gol-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
 
-    .art-regen {
+    /* GoL control bar */
+    .gol-bar {
       position: absolute;
-      bottom: 10px;
-      right: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255, 210, 150, 0.4);
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(13, 9, 5, 0.65);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .tile.art:hover .gol-bar { opacity: 1; }
+
+    .gol-btn {
+      border: 1px solid rgba(255,210,150,0.2);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,210,150,0.7);
       border-radius: 50px;
-      padding: 3px 10px;
-      font-size: 0.65rem;
+      padding: 2px 10px;
+      font-size: 0.68rem;
       font-weight: 700;
       cursor: pointer;
       font-family: 'Nunito', sans-serif;
-      letter-spacing: 0.04em;
-      backdrop-filter: blur(4px);
-      transition: background 0.15s, color 0.15s, opacity 0.15s;
-      opacity: 0;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
     }
 
-    .tile.art:hover .art-regen { opacity: 1; }
-    .art-regen:hover { background: rgba(255,255,255,0.16); color: rgba(255,210,150,0.9); }
+    .gol-btn:hover      { background: rgba(255,255,255,0.14); color: rgba(255,210,150,1); }
+    .gol-btn.active     { background: var(--accent); color: #1a0a03; border-color: var(--accent); }
+
+    .gol-gen {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: rgba(255,210,150,0.35);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+    }
+
+    .gol-hint {
+      position: absolute;
+      top: 8px;
+      left: 12px;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: rgba(255,210,150,0.2);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .tile.art:hover .gol-hint { opacity: 1; }
 
     /* ── Bookmark editing ───────────────────────────────────────────────── */
     .bookmarks-header {
@@ -1026,10 +1062,17 @@
       <div class="otd-list" id="otd-list"><span class="state-loading">Loading…</span></div>
     </div>
 
-    <!-- ── ROW 2: Generative Art (full width) ── -->
-    <div class="tile art">
-      <button class="art-regen" id="art-regen">↺</button>
-      <canvas id="art-canvas"></canvas>
+    <!-- ── ROW 2: Game of Life (full width) ── -->
+    <div class="tile art" id="gol-tile">
+      <span class="gol-hint">Click or drag to toggle cells</span>
+      <canvas id="gol-canvas"></canvas>
+      <div class="gol-bar">
+        <button class="gol-btn active" id="gol-play">⏸ Pause</button>
+        <button class="gol-btn" id="gol-step">Step</button>
+        <button class="gol-btn" id="gol-rand">Randomise</button>
+        <button class="gol-btn" id="gol-clear">Clear</button>
+        <span class="gol-gen" id="gol-gen">Gen 0</span>
+      </div>
     </div>
 
     <!-- ── ROW 3: Wolf | Space | OSRS GE ── -->
@@ -1812,9 +1855,11 @@
     async function fetchWolfPool() {
       // Research-grade observations of Chrysocyon brachyurus with photos,
       // sorted by community votes so we get the best shots first.
+      // term_id=17&term_value_id=18 filters to "Alive" annotations only.
       const url = `https://api.inaturalist.org/v1/observations`
         + `?taxon_name=Chrysocyon+brachyurus`
         + `&photos=true&quality_grade=research`
+        + `&term_id=17&term_value_id=18`
         + `&per_page=100&order_by=votes&order=desc`;
       const res  = await fetch(url);
       const data = await res.json();
@@ -1883,117 +1928,201 @@
     loadWolf();
 
     // ═══════════════════════════════════════════════════════════════
-    //  GENERATIVE ART — Perlin-noise flow field
+    //  CONWAY'S GAME OF LIFE
     // ═══════════════════════════════════════════════════════════════
 
-    class Perlin {
-      constructor() { this.reseed(); }
-      reseed() {
-        const p = Array.from({ length: 256 }, (_, i) => i);
-        for (let i = 255; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [p[i], p[j]] = [p[j], p[i]];
+    class GameOfLife {
+      constructor(canvas) {
+        this.canvas  = canvas;
+        this.ctx     = canvas.getContext('2d');
+        this.cell    = 6;
+        this.cols    = 0;
+        this.rows    = 0;
+        this.grid    = null;
+        this.next    = null;
+        this.gen     = 0;
+        this.running = true;
+        this.intervalId = null;
+        this.FPS     = 12;
+        this.C_BG    = '#100806';
+        this.C_ALIVE = '#e08a50';
+
+        this._resize();
+        this._randomise(0.28);
+        this._startLoop();
+
+        // Mouse draw/erase
+        this._drawing = false;
+        this._drawVal = 1;
+        canvas.addEventListener('mousedown',  e => { this._drawing = true; this._drawVal = 1; this._paintAt(e); });
+        canvas.addEventListener('contextmenu',e => { e.preventDefault(); this._drawing = true; this._drawVal = 0; this._paintAt(e); });
+        canvas.addEventListener('mousemove',  e => { if (this._drawing) this._paintAt(e); });
+        canvas.addEventListener('mouseup',    () => { this._drawing = false; });
+        canvas.addEventListener('mouseleave', () => { this._drawing = false; });
+
+        // Touch draw
+        canvas.addEventListener('touchstart', e => { e.preventDefault(); this._drawing = true; this._drawVal = 1; this._paintAt(e.touches[0]); }, { passive: false });
+        canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (this._drawing) this._paintAt(e.touches[0]); }, { passive: false });
+        canvas.addEventListener('touchend',   () => { this._drawing = false; });
+      }
+
+      _resize() {
+        this.canvas.width  = this.canvas.offsetWidth;
+        this.canvas.height = this.canvas.offsetHeight;
+        const newCols = Math.floor(this.canvas.width  / this.cell);
+        const newRows = Math.floor(this.canvas.height / this.cell);
+        const oldGrid = this.grid;
+        const oldCols = this.cols;
+        const oldRows = this.rows;
+        this.cols = newCols;
+        this.rows = newRows;
+        this.grid = new Uint8Array(this.cols * this.rows);
+        this.next = new Uint8Array(this.cols * this.rows);
+        if (oldGrid) {
+          const minC = Math.min(oldCols, this.cols);
+          const minR = Math.min(oldRows, this.rows);
+          for (let r = 0; r < minR; r++)
+            for (let c = 0; c < minC; c++)
+              this.grid[r * this.cols + c] = oldGrid[r * oldCols + c];
         }
-        this.p = [...p, ...p];
-      }
-      _fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-      _lerp(t, a, b) { return a + t * (b - a); }
-      _grad(h, x, y) { h &= 3; return ((h & 1) ? -x : x) + ((h & 2) ? -y : y); }
-      noise(x, y) {
-        const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
-        x -= Math.floor(x); y -= Math.floor(y);
-        const u = this._fade(x), v = this._fade(y);
-        const a = this.p[X] + Y, b = this.p[X + 1] + Y;
-        return this._lerp(v,
-          this._lerp(u, this._grad(this.p[a],     x,     y),
-                        this._grad(this.p[b],     x - 1, y)),
-          this._lerp(u, this._grad(this.p[a + 1], x,     y - 1),
-                        this._grad(this.p[b + 1], x - 1, y - 1)));
-      }
-    }
-
-    const PALETTE = [
-      '#e8955f','#d4714a','#f2b87e','#f7d4a8',
-      '#c96b3a','#f0a060','#ffe0b5','#d4956b',
-      '#ff7a45','#ffa070','#cc5533',
-    ];
-
-    const perlin  = new Perlin();
-    const canvas  = document.getElementById('art-canvas');
-    const ctx     = canvas.getContext('2d');
-    let particles = [];
-    let animId, t = 0;
-
-    function resizeCanvas() {
-      canvas.width  = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    }
-
-    function makeParticle() {
-      return {
-        x:      Math.random() * canvas.width,
-        y:      Math.random() * canvas.height,
-        color:  PALETTE[Math.floor(Math.random() * PALETTE.length)],
-        speed:  0.6 + Math.random() * 1.4,
-        size:   0.8 + Math.random() * 1.8,
-        age:    0,
-        maxAge: 180 + Math.random() * 420,
-      };
-    }
-
-    function initArt() {
-      if (animId) cancelAnimationFrame(animId);
-      perlin.reseed();
-      resizeCanvas();
-      ctx.fillStyle = '#100806';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const count = Math.max(80, Math.floor(canvas.width * canvas.height / 2200));
-      particles = Array.from({ length: count }, makeParticle);
-      t = 0;
-      drawArt();
-    }
-
-    function drawArt() {
-      ctx.fillStyle = 'rgba(16, 8, 6, 0.045)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const scale = 0.0028, zoff = t * 0.00025;
-
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        const angle = perlin.noise(p.x * scale, p.y * scale + zoff) * Math.PI * 4;
-        p.x += Math.cos(angle) * p.speed;
-        p.y += Math.sin(angle) * p.speed;
-        p.age++;
-
-        if (p.x < 0)             p.x += canvas.width;
-        if (p.x > canvas.width)  p.x -= canvas.width;
-        if (p.y < 0)             p.y += canvas.height;
-        if (p.y > canvas.height) p.y -= canvas.height;
-
-        const life  = p.age / p.maxAge;
-        const alpha = life < 0.1 ? life * 10 : life > 0.75 ? (1 - life) * 4 : 1;
-        const aHex  = Math.floor(Math.min(alpha, 1) * 210).toString(16).padStart(2, '0');
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color + aHex;
-        ctx.fill();
-
-        if (p.age >= p.maxAge) particles[i] = makeParticle();
       }
 
-      t++;
-      animId = requestAnimationFrame(drawArt);
+      _idx(r, c) { return r * this.cols + c; }
+
+      _randomise(density) {
+        this.gen = 0;
+        for (let i = 0; i < this.grid.length; i++)
+          this.grid[i] = Math.random() < density ? 1 : 0;
+        this._render();
+        this._updateGen();
+      }
+
+      _clear() {
+        this.gen = 0;
+        this.grid.fill(0);
+        this._render();
+        this._updateGen();
+      }
+
+      _step() {
+        for (let r = 0; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            let n = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                const nr = (r + dr + this.rows) % this.rows;
+                const nc = (c + dc + this.cols) % this.cols;
+                n += this.grid[this._idx(nr, nc)];
+              }
+            }
+            const alive = this.grid[this._idx(r, c)];
+            this.next[this._idx(r, c)] =
+              alive ? (n === 2 || n === 3 ? 1 : 0)
+                    : (n === 3 ? 1 : 0);
+          }
+        }
+        [this.grid, this.next] = [this.next, this.grid];
+        this.gen++;
+        this._render();
+        this._updateGen();
+      }
+
+      _render() {
+        const ctx  = this.ctx;
+        const w    = this.canvas.width;
+        const h    = this.canvas.height;
+        const cell = this.cell;
+        ctx.fillStyle = this.C_BG;
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = this.C_ALIVE;
+        for (let r = 0; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            if (!this.grid[this._idx(r, c)]) continue;
+            // Slightly vary brightness by neighbour count for visual depth
+            let n = 0;
+            for (let dr = -1; dr <= 1; dr++)
+              for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                n += this.grid[this._idx((r+dr+this.rows)%this.rows, (c+dc+this.cols)%this.cols)];
+              }
+            ctx.globalAlpha = 0.55 + n * 0.055;
+            ctx.fillRect(c * cell + 1, r * cell + 1, cell - 1, cell - 1);
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      _updateGen() {
+        const el = document.getElementById('gol-gen');
+        if (el) el.textContent = `Gen ${this.gen.toLocaleString()}`;
+      }
+
+      _paintAt(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = (e.clientX !== undefined ? e.clientX : e.pageX) - rect.left;
+        const y = (e.clientY !== undefined ? e.clientY : e.pageY) - rect.top;
+        const c = Math.floor(x / this.cell);
+        const r = Math.floor(y / this.cell);
+        if (r >= 0 && r < this.rows && c >= 0 && c < this.cols) {
+          this.grid[this._idx(r, c)] = this._drawVal;
+          this._render();
+        }
+      }
+
+      _startLoop() {
+        if (this.intervalId) clearInterval(this.intervalId);
+        this.intervalId = setInterval(() => { if (this.running) this._step(); }, 1000 / this.FPS);
+      }
+
+      togglePause() {
+        this.running = !this.running;
+        const btn = document.getElementById('gol-play');
+        if (btn) {
+          btn.textContent = this.running ? '⏸ Pause' : '▶ Play';
+          btn.classList.toggle('active', this.running);
+        }
+      }
+
+      resize() {
+        this._resize();
+        this._render();
+      }
     }
 
-    document.getElementById('art-regen').addEventListener('click', initArt);
+    // ── GoL controls wired below initGoL ──────────────────────────────────
 
-    setTimeout(() => { resizeCanvas(); initArt(); }, 120);
+    let gol;
+
+    function initGoL() {
+      const canvas = document.getElementById('gol-canvas');
+      if (gol) { clearInterval(gol.intervalId); }
+      gol = new GameOfLife(canvas);
+    }
+
+    document.getElementById('gol-play').addEventListener('click',  () => gol.togglePause());
+    document.getElementById('gol-step').addEventListener('click',  () => {
+      gol.running = false;
+      document.getElementById('gol-play').textContent = '▶ Play';
+      document.getElementById('gol-play').classList.remove('active');
+      gol._step();
+    });
+    document.getElementById('gol-rand').addEventListener('click',  () => gol._randomise(0.28));
+    document.getElementById('gol-clear').addEventListener('click', () => gol._clear());
+
+    // Spacebar toggles pause when not typing
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        gol.togglePause();
+      }
+    });
+
+    setTimeout(initGoL, 100);
 
     window.addEventListener('resize', () => {
       clearTimeout(window._rt);
-      window._rt = setTimeout(initArt, 220);
+      window._rt = setTimeout(() => gol && gol.resize(), 220);
     });
   </script>
 </body>
