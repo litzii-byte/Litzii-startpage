@@ -1131,7 +1131,7 @@
   <footer>
     Set as Firefox new tab with
     <a href="https://addons.mozilla.org/firefox/addon/new-tab-override/" target="_blank">New Tab Override</a>
-    — point it to this file's path on disk.
+    — point it to your GitHub Pages URL.
   </footer>
 
   <script>
@@ -1380,9 +1380,7 @@
         document.getElementById('weather-locations').innerHTML = '';
         return;
       }
-      const isPrimC   = tempUnit === 'C';
-      const wxTile    = document.getElementById('weather-tile');
-      const isEditing = wxTile.classList.contains('editing-weather');
+      const isPrimC = tempUnit === 'C';
 
       document.getElementById('weather-locations').innerHTML =
         weatherCache.map(d => {
@@ -1397,7 +1395,7 @@
                 <div>
                   <div class="weather-name">${d.name}</div>
                   <div class="weather-desc">${desc}</div>
-                  ${lt ? `<div class="weather-local-time">${lt} local</div>` : ''}
+                  ${lt ? `<div class="weather-local-time" data-tz="${d.timezone}">${lt} local</div>` : ''}
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:8px">
@@ -1540,10 +1538,12 @@
     async function fetchLaunch() {
       const el = document.getElementById('launch-content');
       try {
-        const res  = await fetch('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=1&format=json');
+        // Fetch several to skip any that have already succeeded/failed
+        const res  = await fetch('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=5&format=json&ordering=net');
         const data = await res.json();
-        nextLaunch = data.results?.[0];
-        if (!nextLaunch) { el.innerHTML = '<span class="state-loading">No launches found.</span>'; return; }
+        const DONE = new Set(['Success', 'Failure', 'Partial Failure']);
+        nextLaunch = (data.results ?? []).find(l => !DONE.has(l.status?.abbrev ?? ''));
+        if (!nextLaunch) { el.innerHTML = '<span class="state-loading">No upcoming launches found.</span>'; return; }
 
         const statusName = nextLaunch.status?.name ?? '';
         const statusCls  = launchStatusClass(statusName);
@@ -1671,8 +1671,9 @@
       {id:13576, name:'Abyssal tentacle'},   {id:12932, name:'Tanzanite fang'},
     ];
 
-    const GE_KEY = 'startpage_ge_items';
-    const GE_DEFAULT = [4151, 12934, 561, 385, 536, 565];
+    const GE_KEY         = 'startpage_ge_items';
+    const GE_MAPPING_KEY = 'startpage_ge_mapping';
+    const GE_DEFAULT     = [4151, 12934, 561, 385, 536, 565];
 
     function loadGeItems() {
       try {
@@ -1690,12 +1691,36 @@
       return n.toLocaleString();
     }
 
+    // Full OSRS item list — fetched from the wiki mapping endpoint and cached for 24h
+    let geMappingList = null;
+
+    async function loadGeMappingList() {
+      try {
+        const cached = JSON.parse(localStorage.getItem(GE_MAPPING_KEY) ?? 'null');
+        if (cached?.ts && Date.now() - cached.ts < 86_400_000 && cached.items?.length) {
+          geMappingList = cached.items;
+          return;
+        }
+      } catch {}
+      try {
+        const res  = await fetch('https://prices.runescape.wiki/api/v1/osrs/mapping');
+        const data = await res.json();
+        geMappingList = data
+          .filter(i => i.id && i.name)
+          .map(i => ({ id: i.id, name: i.name }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        localStorage.setItem(GE_MAPPING_KEY, JSON.stringify({ ts: Date.now(), items: geMappingList }));
+      } catch {
+        geMappingList = GE_POPULAR; // graceful fallback to curated list
+      }
+    }
+
     async function fetchGePrices() {
       const items = loadGeItems();
       if (!items.length) { document.getElementById('ge-list').innerHTML = ''; return; }
       try {
-        const ids = items.map(i => i.id).join('|');
-        const res  = await fetch(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${ids}`);
+        // Fetch ALL item prices — the API doesn't support multi-ID filtering
+        const res  = await fetch('https://prices.runescape.wiki/api/v1/osrs/latest');
         const data = await res.json();
         renderGePrices(items, data.data ?? {}, {});
       } catch {
@@ -1763,9 +1788,10 @@
       const q = geSearchEl.value.toLowerCase().trim();
       if (!q) { geResultsEl.style.display = 'none'; return; }
       const current = loadGeItems().map(i => i.id);
-      const matches = GE_POPULAR.filter(i =>
+      const source  = geMappingList ?? GE_POPULAR;
+      const matches = source.filter(i =>
         i.name.toLowerCase().includes(q) && !current.includes(i.id)
-      ).slice(0, 8);
+      ).slice(0, 10);
       if (!matches.length) { geResultsEl.style.display = 'none'; return; }
       geResultsEl.style.display = 'block';
       geResultsEl.innerHTML = matches.map(i =>
@@ -1787,6 +1813,7 @@
       if (!geSearchWrap.contains(e.target)) geResultsEl.style.display = 'none';
     });
 
+    loadGeMappingList(); // async — populates geMappingList for search
     fetchGePrices();
     setInterval(fetchGePrices, 5 * 60 * 1000); // refresh every 5 min
 
